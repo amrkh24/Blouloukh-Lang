@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي لغة البلولوخ لايف v0.2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; text-align: right; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; padding: 30px; border-radius: 12px; }
+        .code-input { background-color: #1a1a1a; color: #00ff66; font-family: monospace; font-size: 18px; border: 1px solid #444; text-align: left; direction: ltr; }
+        .code-input:focus { background-color: #1a1a1a; color: #00ff66; border-color: #00ff66; box-shadow: none; }
+        .console-output { background-color: #000; color: #00ffbb; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #222; min-height: 150px; white-space: pre-wrap; text-align: right; font-size: 16px; }
+        .btn-blouloukh { background-color: #00ff66; color: #000; font-weight: bold; font-size: 20px; transition: 0.3s; }
+        .btn-blouloukh:hover { background-color: #00cc55; color: #000; transform: scale(1.01); }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-success">💻 Blouloukh Playground</h1>
+        <p class="text-muted">المُحاكي الرسمي السريع للغة البلولوخ v0.2 - اِكتب واِقـرص لايف من المتصفح!</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg">
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-light mb-2 fs-5">اكتب كود البلولوخ هنا يا أسطى:</label>
+                    <textarea id="sourceCode" class="form-control code-input" rows="10" placeholder="ثبت حضور اسم = 'عمرو'&#10;سمعنا اسم"></textarea>
+                </div>
+                <div class="mb-4">
+                    <button onclick="runBlouloukh()" class="btn btn-blouloukh btn-lg w-100 py-3">اِقـرص واِعـمل دَوَر العَجَلة ⚡</button>
+                </div>
+                <div>
+                    <h5 class="text-light mb-3">شاشة المخرجات (Console Output):</h5>
+                    <div id="consoleOutput" class="console-output">في انتظار دور العجلة...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function runBlouloukh() {
+    const code = document.getElementById('sourceCode').value;
+    const outputDiv = document.getElementById('consoleOutput');
+    
+    if (!code.trim()) {
+        outputDiv.innerHTML = "اكتب كود يا أسطى الأول عشان نشغله! 🛑";
+        outputDiv.style.color = "#ff3333";
+        return;
+    }
+
+    outputDiv.style.color = "#00ffbb";
+    let outputLog = "";
+    const lines = code.split('\n');
+    let variables = {};
+
+    try {
+        lines.forEach((line, index) => {
+            let trimmedLine = line.trim();
+            if (!trimmedLine) return;
+
+            if (trimmedLine.startsWith("ثبت حضور")) {
+                let definition = trimmedLine.replace("ثبت حضور", "").trim();
+                if (definition.includes("=")) {
+                    let parts = definition.split("=");
+                    let varName = parts[0].trim();
+                    let varVal = parts[1].trim().replace(/['"]/g, "");
+                    variables[varName] = varVal;
+                    outputLog += `[ذاكرة]: تم حجز المتغير (${varName}) بقيمة (${varVal})\n`;
+                } else {
+                    outputLog += `[خطأ في السطر ${index + 1}]: ثبت حضور ناقصة قيمة يا أسطى!\n`;
+                }
+            }
+            else if (trimmedLine.startsWith("سمعنا")) {
+                let varName = trimmedLine.replace("سمعنا", "").trim();
+                if (variables[varName] !== undefined) {
+                    outputLog += `> ${variables[varName]}\n`;
+                } else if (varName.startsWith("'") || varName.startsWith('"')) {
+                    outputLog += `> ${varName.replace(/['"]/g, "")}\n`;
+                } else {
+                    outputLog += `> ${varName}\n`;
+                }
+            }
+            else {
+                outputLog += `[تنبيه]: السطر (${trimmedLine}) شغال في التكييف ومفهوش مشاكل..\n`;
+            }
+        });
+
+        outputLog += "\n🚀 دور التكرار واقعد في التكييف! تم التنفيذ بنجاح.";
+        outputDiv.innerText = outputLog;
+
+    } catch (err) {
+        outputDiv.innerText = "المحرك هنج من الكود! اِتأكد من السنتكس.";
+        outputDiv.style.color = "#ff3333";
+    }
+}
+</script>
+</body>
+</html>
