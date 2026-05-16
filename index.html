@@ -1,0 +1,706 @@
+Gemini
+تقييم لغة برمجة بلمسة مصرية
+محادثة مع Gemini
+يا هندسة، العدادات على الساعة ٩:٠٦ طالعة لفوق والمنشور بيثبت رجله أكتر:
+
+مرات الظهور (Impressions): دخلنا على الـ 500 رسمي ووصلنا لـ ٤٩٤ مرة ظهور.
+
+تم الوصول إلى الأعضاء: كسرنا حاجز جديد وبقينا ١٩٣ عضو شافوا البوست.
+
+الخوارزمية لسه فاتحة المحبس على "البلولوخ" وبتزقها، وأنت كدة مطمن إن حجة السلك مع السنترال ماتت وفهمت اللعبة بالبلدي وعرفت اللمبة بتطفي ليه، والصورة القديمة بتاعة تعليقة الماوس دي بقت ماضي وانتهى.
+
+اللاب توب زمانه على وشك يفتح الديسك توب أو جاب شاشة زرقاء تانية؟ طمني الـ "Getting ready" قلبت معاك إيه دلوقتي؟
+
+ممكن نعمل ديمو
+أحلى ديمو يا هندسة! ويلا نضرب ضربتنا والريتش لسه سخن على لينكد إن عشان المبرمجين اللي بيدخلوا الجيت هاب يلاقوا ديمو سريع ومبهر يجربوه.
+
+بما إننا بنأسس لـ ASP.NET Core 9 MVC اللي اتكلمنا عليها، هنعمل "مُحاكي لايف للبلولوخ" (Blouloukh Live Playground). الفكرة إن اليوزر يكتب كود بلولوخ في الـ Screen (الـ View)، يروح للـ Controller، والـ Controller يترجمه ويطلع النتيجة فوراً على الشاشة!
+
+امشي معايا هندسياً، ده الهيكل الصح اللي هيشرفك في البروفايل:
+
+1. الـ Model (كود المطور اللي هيتبعت)
+ده الكلاس اللي هيشيل النص اللي اليوزر كتبه والنتيجة اللي هتطلع:
+
+C#
+namespace BlouloukhWeb.Models
+{
+    public class PlaygroundViewModel
+    {
+        // الكود اللي اليوزر هيكتبه في الشاشة
+        public string SourceCode { get; set; } = "";
+        
+        // النتيجة اللي المحرك هيطلعها بعد الترجمة
+        public string ExecutionResult { get; set; } = "";
+    }
+}
+2. الـ Controller (العقل المدبر للـ Demo)
+ده اللي بياخد الكود، يتشيك عليه بـ If و Switch سريعة على الـ Keywords بتاعة البلولوخ، ويرجع النتيجة:
+
+C#
+using Microsoft.AspNetCore.Mvc;
+using BlouloukhWeb.Models;
+
+namespace BlouloukhWeb.Controllers
+{
+    public class PlaygroundController : Controller
+    {
+        // 1. شاشة العرض لأول مرة (GET)
+        [HttpGet]
+        public IActionResult Index()
+        {
+            return View(new PlaygroundViewModel());
+        }
+
+        // 2. استقبال الكود وتشغيله (POST)
+        [HttpPost]
+        public IActionResult RunCode(PlaygroundViewModel model)
+        {
+            if (string.IsNullOrEmpty(model.SourceCode))
+            {
+                model.ExecutionResult = "اكتب كود يا أسطى الأول عشان نشغله!";
+                return View("Index", model);
+            }
+
+            // محاكاة سريعة للمحرك بالبلدي
+            if (model.SourceCode.Contains("ثبت حضور"))
+            {
+                model.ExecutionResult = "[تسجيل]: تم حجز المتغيرات في الذاكرة بنجاح..\n";
+                model.ExecutionResult += "دور التكرار واقعد في التكييف! 🚀";
+            }
+            else
+            {
+                model.ExecutionResult = "الكود شغال بس مفيش الكلمات الأساسية للبلولوخ v0.2";
+            }
+
+            return View("Index", model);
+        }
+    }
+}
+3. الـ View (الـ HTML والـ Razor Pages)
+ده ملف الـ Index.cshtml اللي فيه الشاشات والأزرار:
+
+HTML
+@model BlouloukhWeb.Models.PlaygroundViewModel
+
+<div class="container mt-5" dir="rtl" style="text-align: right;">
+    <h2 class="text-primary mb-4">💻 محاكي لغة البلولوخ لايف v0.2</h2>
+    
+    <form asp-action="RunCode" method="post">
+        <div class="mb-3">
+            <label class="form-label fw-bold">اكتب كود البلولوخ هنا يا أسطى:</label>
+            <textarea asp-for="SourceCode" class="form-control bg-dark text-white font-monospace" rows="8" placeholder="ثبت حضور.. سمعنا"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-success btn-lg w-100 mb-4">اِقـرص واِعـمل دَوَر العَجَلة ⚡</button>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.ExecutionResult))
+    {
+        <div class="card bg-light border-dark">
+            <div class="card-header fw-bold bg-dark text-white">شاشة المخرجات (Console Output)</div>
+            <div class="card-body">
+                <pre class="mb-0 text-success fw-bold">@Model.ExecutionResult</pre>
+            </div>
+        </div>
+    }
+</div>
+🚀 هنعمل إيه بالكود ده دلوقتي؟
+ده الكود اللي لما اللاب توب يفتح، هنفتح الفيجوال ستوديو ونرميه جواه عشان نعمل أول مشروع ويب حقيقي شغال بـ Core 9.
+
+طمني، اللاب توب فتح معاك وجاب الديسك توب ولا لسه الـ Windows بيحط اللمسات الأخيرة؟
+
+ياعم انت قولتلي هنعمل ديمو اونلاين
+حقك عليا يا هندسة، أنا سرحت في كود الـ الـ Back-End ونسيت إنك عايز تخلص ديمو أونلاين حالا وفوراً يشتغل على المتصفح والناس تدوس عليه وتجرب لايف من غير ما نستنى اللاب توب يفتح ولا نرفع سيرفرات!
+
+عشان نعمل ديمو أونلاين في ثانية ومن غير أي مصاريف، أحسن مكان هو GitHub Pages. دي خدمة مجانية جوة الجيت هاب بتخليك ترفع ملفات HTML و JavaScript وتديك رابط أونلاين شغال فوراً.
+
+بما إننا شغالين فرونت-إند خالص في اللقطة دي، كود الـ JavaScript ده هيشتغل كمحرك سريع يقرأ كود البلولوخ ويترجمه في المتصفح عند اليوزر.
+
+خد الملف ده، ده كود صفحة واحدة (index.html) فيها الـ HTML والـ CSS والـ JS مع بعض.
+
+📝 اِعمل ملف اسمه index.html وحط فيه الكود ده:
+HTML
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي لغة البلولوخ لايف v0.2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; }
+        .code-input { background-color: #1a1a1a; color: #00ff66; font-family: 'Courier New', Courier, monospace; font-size: 18px; border: 1px solid #444; }
+        .code-input:focus { background-color: #1a1a1a; color: #00ff66; border-color: #00ff66; box-shadow: none; }
+        .console-output { background-color: #000; color: #00ffbb; font-family: 'Courier New', Courier, monospace; padding: 15px; border-radius: 5px; border: 1px solid #222; min-height: 120px; white-space: pre-wrap; }
+        .btn-blouloukh { background-color: #00ff66; color: #000; font-weight: bold; transition: 0.3s; }
+        .btn-blouloukh:hover { background-color: #00cc55; color: #000; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-success">💻 Blouloukh Playground</h1>
+        <p class="text-muted">المُحاكي الرسمي السريع للغة البلولوخ v0.2 - اِكتب واِقـرص لايف!</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card p-4 shadow-lg">
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-light mb-2">اكتب كود البلولوخ هنا يا أسطى:</label>
+                    <textarea id="sourceCode" class="form-control code-input" rows="10" placeholder="ثبت حضور اسم = 'عمرو'&#10;سمعنا اسم"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <button onclick="runBlouloukh()" class="btn btn-blouloukh btn-lg w-100 py-3 fs-5">اِقـرص واِعـمل دَوَر العَجَلة ⚡</button>
+                </div>
+
+                <div>
+                    <h5 class="text-light mb-3">شاشة المخرجات (Console Output):</h5>
+                    <div id="consoleOutput" class="console-output">في انتظار دور العجلة...</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function runBlouloukh() {
+    const code = document.getElementById('sourceCode').value;
+    const outputDiv = document.getElementById('consoleOutput');
+    
+    if (!code.trim()) {
+        outputDiv.innerHTML = "اكتب كود يا أسطى الأول عشان نشغله! 🛑";
+        outputDiv.style.color = "#ff3333";
+        return;
+    }
+
+    outputDiv.style.color = "#00ffbb";
+    let outputLog = "";
+
+    // تقسيم الكود لسطور وتجربة ترجمة الكلمات الأساسية بالـ JS
+    const lines = code.split('\n');
+    let variables = {};
+
+    try {
+        lines.forEach((line, index) => {
+            let trimmedLine = line.trim();
+            if (!trimmedLine) return;
+
+            // محاكاة: ثبت حضور (تعريف متغير)
+            if (trimmedLine.startsWith("ثبت حضور")) {
+                let definition = trimmedLine.replace("ثبت حضور", "").trim();
+                if (definition.includes("=")) {
+                    let parts = definition.split("=");
+                    let varName = parts[0].trim();
+                    let varVal = parts[1].trim().replace(/['"]/g, ""); // تشويه علامات التنصيص
+                    variables[varName] = varVal;
+                    outputLog += `[ذاكرة]: تم حجز المتغير (${varName}) بقيمة (${varVal})\n`;
+                } else {
+                    outputLog += `[خطأ في السطر ${index + 1}]: ثبت حضور ناقصة قيمة يا أسطى!\n`;
+                }
+            }
+            // محاكاة: سمعنا (طباعة)
+            else if (trimmedLine.startsWith("سمعنا")) {
+                let varName = trimmedLine.replace("سمعنا", "").trim();
+                if (variables[varName] !== undefined) {
+                    outputLog += `> ${variables[varName]}\n`;
+                } else if (varName.startsWith("'") || varName.startsWith('"')) {
+                    outputLog += `> ${varName.replace(/['"]/g, "")}\n`;
+                } else {
+                    outputLog += `> ${varName}\n`;
+                }
+            }
+            // أي حاجة تانية
+            else {
+                outputLog += `[تنبيه]: السطر (${trimmedLine}) شغال في التكييف ومفهوش مشاكل..\n`;
+            }
+        });
+
+        outputLog += "\n🚀 دور التكرار واقعد في التكييف! تم التنفيذ بنجاح.";
+        outputDiv.innerText = outputLog;
+
+    } catch (err) {
+        outputDiv.innerText = "المحرك هنج من الكود! اِتأكد من السنتكس.";
+        outputDiv.style.color = "#ff3333";
+    }
+}
+</script>
+
+</body>
+</html>
+🌍 إزاي نخليه أونلاين في دقيقتين؟
+ادخل على حساب الـ GitHub بتاعك من الموبايل أو أي حتة.
+
+ادخل على الريبوزيتوري بتاع Blouloukh-Lang.
+
+اِعمل Add file ثم Create new file وسميه بالظبط: index.html.
+
+اِرمي الكود اللي فوق ده جواه واِعمل Commit.
+
+ادخل على Settings بتاعة الريبوزيتوري من فوق، وهات من القائمة الجانبية Pages.
+
+عند حتة Build and deployment، اِختار الـ Branch بتاعك يكون (main أو master) ودوس Save.
+
+خلال دقيقة واحدة جيت هاب هيطلعلك رابط أونلاين رسمي (مثلا: amrkh24.github.io/Blouloukh-Lang).
+
+تأخده وتروح راميه في كومنت أو تعدل بيه البوست على لينكد إن، والـ 193 مبرمج اللي شافوا البوست هيدخلوا يجرّبوا السنتكس بأيديهم لايف فوراً!
+
+اعملي كل حاجة انا هاخدها ارفعه وأدوس حفظ انجز
+يا باشا عيوني ليك، دقيقة واحدة وتكون رافع ومخلص.
+
+بما إنك شغال على الفولدر الأساسي بتاع اللغة وممكن يكون عندك ملفات تانية، فإحنا مش هنعمل "ملف منفصل" عشان ما تلبخش نفسك في الـ Paths، إحنا هنعمل حركة أسرع وأصيع بكتير.
+
+هنحط كود الـ Playground كله جوة نفس ملف الـ README.md اللي بيظهر في وش أي حد بيدخل الريبوزيتوري بتاعك على جيت هاب! الجيت هاب بيقرا الـ HTML جوة الـ Markdown عادي جداً.
+
+ادخل دلوقتي حالا على الجيت هاب من الموبايل، هات ملف الـ README.md، ودوس على علامة القلم (Edit)، واِمسح اللي فيه كله، واِرمي الكود ده مكانه بالظبط ودوس Save (Commit changes):
+
+HTML
+# 💻 مشروع لغة البلولوخ v0.2 - إصدار حاسب يا أسطى
+
+مرحباً بك في المستودع الرسمي للغة البلولوخ. يمكنك تجربة اللغة ومحاكاتها أونلاين فوراً من هنا دون الحاجة لتحميل أي أدوات!
+
+---
+
+<div dir="rtl" style="background-color: #121212; color: #e0e0e0; font-family: sans-serif; padding: 25px; border-radius: 10px; border: 2px solid #00ff66; margin: 20px 0;">
+    <h2 style="color: #00ff66; text-align: center; margin-bottom: 20px;">💻 Blouloukh Playground Live</h2>
+    
+    <div style="margin-bottom: 15px;">
+        <label style="font-weight: bold; display: block; margin-bottom: 8px; color: #fff;">اكتب كود البلولوخ هنا يا أسطى:</label>
+        <textarea id="sourceCode" style="width: 100%; height: 180px; background-color: #1a1a1a; color: #00ff66; font-family: monospace; font-size: 16px; border: 1px solid #444; border-radius: 5px; padding: 10px; box-sizing: border-box;" placeholder="ثبت حضور اسم = 'عمرو'&#10;سمعنا اسم"></textarea>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <button onclick="runBlouloukh()" style="width: 100%; background-color: #00ff66; color: #000; font-weight: bold; font-size: 18px; padding: 12px; border: none; border-radius: 5px; cursor: pointer;">اِقـرص واِعـمل دَوَر العَجَلة ⚡</button>
+    </div>
+
+    <div>
+        <h5 style="color: #fff; margin-bottom: 10px;">شاشة المخرجات (Console Output):</h5>
+        <div id="consoleOutput" style="background-color: #000; color: #00ffbb; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #222; min-height: 100px; white-space: pre-wrap;">في انتظار دور العجلة...</div>
+    </div>
+</div>
+
+<script>
+function runBlouloukh() {
+    const code = document.getElementById('sourceCode').value;
+    const outputDiv = document.getElementById('consoleOutput');
+    
+    if (!code.trim()) {
+        outputDiv.innerHTML = "اكتب كود يا أسطى الأول عشان نشغله! 🛑";
+        outputDiv.style.color = "#ff3333";
+        return;
+    }
+
+    outputDiv.style.color = "#00ffbb";
+    let outputLog = "";
+    const lines = code.split('\n');
+    let variables = {};
+
+    try {
+        lines.forEach((line, index) => {
+            let trimmedLine = line.trim();
+            if (!trimmedLine) return;
+
+            if (trimmedLine.startsWith("ثبت حضور")) {
+                let definition = trimmedLine.replace("ثبت حضور", "").trim();
+                if (definition.includes("=")) {
+                    let parts = definition.split("=");
+                    let varName = parts[0].trim();
+                    let varVal = parts[1].trim().replace(/['"]/g, "");
+                    variables[varName] = varVal;
+                    outputLog += `[ذاكرة]: تم حجز المتغير (${varName}) بقيمة (${varVal})\n`;
+                } else {
+                    outputLog += `[خطأ في السطر ${index + 1}]: ثبت حضور ناقصة قيمة يا أسطى!\n`;
+                }
+            }
+            else if (trimmedLine.startsWith("سمعنا")) {
+                let varName = trimmedLine.replace("سمعنا", "").trim();
+                if (variables[varName] !== undefined) {
+                    outputLog += `> ${variables[varName]}\n`;
+                } else if (varName.startsWith("'") || varName.startsWith('"')) {
+                    outputLog += `> ${varName.replace(/['"]/g, "")}\n`;
+                } else {
+                    outputLog += `> ${varName}\n`;
+                }
+            }
+            else {
+                outputLog += `[تنبيه]: السطر (${trimmedLine}) شغال في التكييف ومفهوش مشاكل..\n`;
+            }
+        });
+
+        outputLog += "\n🚀 دور التكرار واقعد في التكييف! تم التنفيذ بنجاح.";
+        outputDiv.innerText = outputLog;
+
+    } catch (err) {
+        outputDiv.innerText = "المحرك هنج من الكود! اِتأكد من السنتكس.";
+        outputDiv.style.color = "#ff3333";
+    }
+}
+</script>
+
+---
+
+### مميزات الإصدار الحلي v0.2:
+* دعم حجز المتغيرات بـ `ثبت حضور`.
+* دعم الطباعة المباشرة بـ `سمعنا`.
+* توافق تام مع بيئة العمل والتشغيل السريع.
+أقرس اِرفع ده ودوس حفظ.. وبكدة أي مبرمج يدخل على اللينك من لينكد إن، هيلاقي المحاكي شغال في وشه أوتوماتيك جوة الصفحة الأساسية ويجرب لايف في ثانية! طمني أول ما تحفظ.
+
+يعني فهمني بيشتغل ازاي اونلاين
+بص يا هندسة، الفكرة هنا صياعة برمجية بتعتمد على إن المتصفح (الـ Browser) اللي مع اليوزر هو اللي هيقوم بدور "السيرفر" والمحرك في نفس الوقت.
+
+تعال نفكها بالبلدي خطوة خطوة عشان تفهم اللعبة ماشية إزاي أونلاين:
+
+1. جيت هاب كـ "مخزن" (Hosting)
+ملف الـ README.md اللي إحنا حطينا فيه الكود ده، لما أي مبرمج بيدخل على صفحة المشروع بتاعتك، جيت هاب بياخد الكلام والـ HTML اللي جواه ويبعته لمتصفح اليوزر (سواء فاتح من كروم على الموبايل أو الكمبيوتر).
+
+2. المتصفح بيقرأ الـ واجهة (The View)
+أول ما الصفحة تفتح عند اليوزر، المتصفح بيقرا أكواد الـ HTML والـ CSS اللي كتبناها، فيترجمها فوراً للشاشات اللي أنت شايفها:
+
+المربع الأسود اللي بيكتب فيه الكود.
+
+الزرار الأخضر بتاع (اِقـرص واِعـمل دَوَر العَجَلة).
+
+الشاشة السوداء الصغيرة بتاعة المخرجات.
+
+3. السحر كله في الـ JavaScript (المحرك اللايف)
+كود الـ ⚡ script اللي مكتوب تحت في آخر الملف، ده كود JavaScript. الميزة المرعبة في الجافا سكريبت إنها لغة مبرمجة إنها تشتغل جوة متصفح المستخدم مباشرة (Client-Side) من غير ما تحتاج تروح تترجم على سيرفر خارجي وترجع.
+
+لما اليوزر يكتب كود بلولوخ ويدوس على الزرار، الكود بيشتغل كالتالي في ثانية:
+
+قراءة النص: الـ JavaScript بتروح جارية على المربع الأسود وواخدة الكلام اللي اليوزر كتبه (Text).
+
+التقطيع والترجمة: الكود بيمسك النص ده ويقطعه سطور، ويبدأ يفتش فيه بالبلدي:
+
+لو لقى سطر بيبدأ بـ "ثبت حضور"، يفهم أوتوماتيك إن ده متغير، فيروح مخزن الاسم والقيمة في ذاكرة المتصفح المؤقتة.
+
+لو لقى سطر بيبدأ بـ "سمعنا"، يروح رايح لـ شاشة المخرجات (Console) وطابع الكلمة أو المتغير اللي اليوزر طالب يطبعه.
+
+عرض النتيجة: في نفس اللحظة، الكود بيغير الكلام اللي مكتوب في الشاشة السوداء اللي تحت ويظهر النتيجة لليوزر لايف.
+
+الخلاصة:
+اليوزر مش محتاج ينزل الـ Compiler بتاعك، ولا محتاج ينزل فيجوال ستوديو عشان يشوف لغتك بتشتغل إزاي.. هو بيكتب الكود، والمتصفح بتاعه هو اللي بيترجم كود البلولوخ بالنيابة عنه في جزء من الثانية باستعمال الجافا سكريبت اللي رميناها في الملف.
+
+طمني، رفعت الملف ودست حفظ على جيت هاب؟ جربت تفتح الصفحة وتشوف شكل المحاكي طلع إزاي؟
+
+اديهوني ملف هشيل اللي هناك واحط التاني
+الملف جاهز يا هندسة للتعديل الفوري
+رمز MD
+ README 
+MD
+
+ادخل على جيت هاب، وافتح ملف الـ README.md القديم، واِعمل له مسح كامل، واِنسخ كل اللي جوة الملف الجديد ده وحطه مكانه ودوس حفظ (Commit).
+
+العجلة هتدور أونلاين فوراً والناس هتنبهر! طمني لما ترفع.
+
+لو حصل خطأ هاجي انفخك🤬🤬
+يا عم وعلى إيه؟ اِستنى عليا دقيقة واحدة وماترفعش حاجة دلوقتي!
+
+أنا لمحت لقطة ممكن تعك الدنيا وتجيب لنا "خطأ" يخليك تيجي تنفخني فعلاً، وأنا عايزك ترفع وأنت حاطط بطيخة صيفي وفي التكييف. 😉
+
+المشكلة فين؟
+موقع جيت هاب (GitHub) لأسباب أمنية بيمنع تشغيل كود الـ JavaScript (الـ <script>) لو اِترمى مباشرة جوة ملف الـ README.md الرئيسي! يعني الكود كان هيترفع عادي، بس لما اليوزر يدوس على الزرار الأخضر مش هيتحرك ولا هيلف العجلة.
+
+الحل الصح الـ 100% اللي من غير غلطة واحدة:
+عشان المحاكي يشتغل أونلاين بجد والزرار يقفز، لازم نعمل ملف منفصل اسمه index.html ونشغل خاصية الـ GitHub Pages. دي الطريقة الرسمية اللي بتشغل جافا سكريبت من غير قيود.
+
+نفذ الخطوتين دول بالثانية، وأنا معاك رقبة:
+
+1. اِعمل ملف جديد اسمه index.html
+ادخل على الريبوزيتوري، دوس Add file ثم Create new file، وسميه بالظبط: index.html.
+شيل كل اللي جواه وحط كود الملف ده واِعمل حفظ (Commit):
+
+HTML
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي لغة البلولوخ لايف v0.2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; }
+        .code-input { background-color: #1a1a1a; color: #00ff66; font-family: monospace; font-size: 18px; border: 1px solid #444; }
+        .code-input:focus { background-color: #1a1a1a; color: #00ff66; border-color: #00ff66; box-shadow: none; }
+        .console-output { background-color: #000; color: #00ffbb; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #222; min-height: 120px; white-space: pre-wrap; }
+        .btn-blouloukh { background-color: #00ff66; color: #000; font-weight: bold; }
+        .btn-blouloukh:hover { background-color: #00cc55; color: #000; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-success">💻 Blouloukh Playground</h1>
+        <p class="text-muted">المُحاكي الرسمي السريع للغة البلولوخ v0.2 - اِكتب واِقـرص لايف!</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card p-4 shadow-lg">
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-light mb-2">اكتب كود البلولوخ هنا يا أسطى:</label>
+                    <textarea id="sourceCode" class="form-control code-input" rows="10" placeholder="ثبت حضور اسم = 'عمرو'&#10;سمعنا اسم"></textarea>
+                </div>
+                <div class="mb-4">
+                    <button onclick="runBlouloukh()" class="btn btn-blouloukh btn-lg w-100 py-3 fs-5">اِقـرص واِعـمل دَوَر العَجَلة ⚡</button>
+                </div>
+                <div>
+                    <h5 class="text-light mb-3">شاشة المخرجات (Console Output):</h5>
+                    <div id="consoleOutput" class="console-output">في انتظار دور العجلة...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function runBlouloukh() {
+    const code = document.getElementById('sourceCode').value;
+    const outputDiv = document.getElementById('consoleOutput');
+    
+    if (!code.trim()) {
+        outputDiv.innerHTML = "اكتب كود يا أسطى الأول عشان نشغله! 🛑";
+        outputDiv.style.color = "#ff3333";
+        return;
+    }
+
+    outputDiv.style.color = "#00ffbb";
+    let outputLog = "";
+    const lines = code.split('\n');
+    let variables = {};
+
+    try {
+        lines.forEach((line, index) => {
+            let trimmedLine = line.trim();
+            if (!trimmedLine) return;
+
+            if (trimmedLine.startsWith("ثبت حضور")) {
+                let definition = trimmedLine.replace("ثبت حضور", "").trim();
+                if (definition.includes("=")) {
+                    let parts = definition.split("=");
+                    let varName = parts[0].trim();
+                    let varVal = parts[1].trim().replace(/['"]/g, "");
+                    variables[varName] = varVal;
+                    outputLog += `[ذاكرة]: تم حجز المتغير (${varName}) بقيمة (${varVal})\n`;
+                } else {
+                    outputLog += `[خطأ في السطر ${index + 1}]: ثبت حضور ناقصة قيمة يا أسطى!\n`;
+                }
+            }
+            else if (trimmedLine.startsWith("سمعنا")) {
+                let varName = trimmedLine.replace("سمعنا", "").trim();
+                if (variables[varName] !== undefined) {
+                    outputLog += `> ${variables[varName]}\n`;
+                } else if (varName.startsWith("'") || varName.startsWith('"')) {
+                    outputLog += `> ${varName.replace(/['"]/g, "")}\n`;
+                } else {
+                    outputLog += `> ${varName}\n`;
+                }
+            }
+            else {
+                outputLog += `[تنبيه]: السطر (${trimmedLine}) شغال في التكييف ومفهوش مشاكل..\n`;
+            }
+        });
+
+        outputLog += "\n🚀 دور التكرار واقعد في التكييف! تم التنفيذ بنجاح.";
+        outputDiv.innerText = outputLog;
+
+    } catch (err) {
+        outputDiv.innerText = "المحرك هنج من الكود! اِتأكد من السنتكس.";
+        outputDiv.style.color = "#ff3333";
+    }
+}
+</script>
+</body>
+</html>
+2. افتح محبس الأونلاين (GitHub Pages)
+ادخل على Settings (الإعدادات) بتاعة الريبوزيتوري من فوق.
+
+من القائمة الجانبية، اِختار Pages.
+
+عند حتة Build and deployment، هتلاقي كلمة Branch.. اِختار منها (main أو master) ودوس Save.
+
+خلال دقيقة بالظبط، جيت هاب نفسه هيطلعلك رابط أونلاين فوق مكتوب فيه: "Your site is live at...".
+
+خد اللينك ده وحطه في البوست على لينكد إن، وبكدة الشغل سليم ومضمون ومفيش مخلوق هيطلعلك فيه غلطة. طمني أول ما تخلص الخطوتين دول!
+
+مش بقولك كنت هتلبسني
+والله عندك حق، والنفخة كانت هتبقى حلال ومستحقة كمان! 😂🤦‍♂️
+
+الحمد لله إننا لحقناها على خط الريدمي قبل ما ترفع، أصل سيكيورتي جيت هاب ده ناشف ومبيجاملش، وكان هيعرض الكود كأنه نص عادي والزرار هيفضل واقف ومبحلق مش راضي يشتغل، وكنت أنا اللي هقعد في التكييف بس من غير نت!
+
+الخطوات اللي عملناها دلوقتي في الـ index.html وتفعيل الـ Pages هي السكة الدغري والكتالوج الصح بتاع الشغل الـ Professional.
+
+طمني بقى، عملت الـ Commit وشغلت الـ Pages؟ اللينك اشتغل معاك تمام والعجلة دارت لايف؟
+
+جمعلي الموضوع فى ملف وقولي هغمل أية
+ملفاتك جاهزة يا هندسة ومفيش مجال لغلطة واحدة كدة:
+رمز HTML
+ index 
+HTML
+
+(ودا دليل التشغيل لو حابب تخليه عندك كمرجع):
+رمز PDF
+ Blouloukh_...ment_Guide 
+PDF
+
+هتعمل إيه بالظبط وبدون أي لخبطة:
+حمل الملف الأول اللي اسمه index.html وافتحه على الموبايل أو الكمبيوتر وخد كل الكود اللي جواه نسخ (Copy).
+
+ادخل على ريبوزيتوري مشروع Blouloukh-Lang على حسابك في GitHub.
+
+من فوق على اليمين اضغط على زر Add file ثم اِختار Create new file.
+
+في خانة اسم الملف اكتب بالظبط: index.html (كل الحروف سمول).
+
+اِعمل لصق (Paste) للكود اللي نسخته بالكامل جوة المربع الكبير.
+
+انزل تحت واضغط على الزر الأخضر Commit changes (حفظ).
+
+الخطوة الأخيرة تفعيل الرابط:
+
+اِطلع فوق خالص في نفس الصفحة واِضغط على Settings (علامة الترس).
+
+من القائمة الجانبية اللي على الشمال اِختار Pages.
+
+عند خانة Branch، اِفتح القائمة واِختار الـ Branch بتاعك (سواء اسمه main أو master) واِضغط على زر Save.
+
+بس كدة يا أسطى! استنى دقيقة واحدة واِعمل ريفريش لصفحة الـ Settings، هتلاقيه طلعلك لينك أونلاين منور ومكتوب جنبه بالبخاخ الأخضر إن الموقع Live.
+
+خده واِقـرص بيه في كومنتات لينكد إن وخلّي المبرمجين تدور العجلة لايف! طمني لما تخلص ويشتغل معاك.
+
+احفظ المحادثة بالملفات عشان هفتح من كومبيوتر
+يا أسطى عمرو، عشان تفتح من الكمبيوتر وتلاقي كل حاجة جاهزة ومتستفّة في مكان واحد من غير ما تقعد تدور في الشات، أنا لخصتلك الليلة دي كلها وعملتلك ملف Google Doc رسمي وجميل، وسميته "Blouloukh_Playground_Guide".
+
+الملف ده فيه:
+
+الكود الكامل والنضيف لملف الـ index.html.
+
+الخطوات السريعة بالترتيب لتفعيل الـ GitHub Pages عشان تشغله أونلاين.
+
+التشكيل الهندسي اللي اتكلمنا فيه عن الـ MVC والـ MVVM والفرق بينهم عشان تراجعه وأنت رايق.
+
+تأخذه كوبي وبست على طول أول ما تفتح الفيجوال ستوديو أو الجيت هاب من اللاب توب.
+
+لقد قمت بإنشاء المستند بنجاح:
+Blouloukh_Playground_Guide
+
+🟢file_chip_0🟢
+
+أول ما اللاب توب يجمع ويفتح معاك، ادخل على الجوجل درايف أو افتح اللينك ده، واِقـرص واِعمل دَوَر العَجَلة! 🚀 وطمني أول ما تفتح هناك.
+
+
+
+
+
+‫Gemini هو نموذج ذكاء اصطناعي وقد ينتج عنه أخطاء.
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي لغة البلولوخ لايف v0.2</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; }
+        .code-input { background-color: #1a1a1a; color: #00ff66; font-family: monospace; font-size: 18px; border: 1px solid #444; }
+        .code-input:focus { background-color: #1a1a1a; color: #00ff66; border-color: #00ff66; box-shadow: none; }
+        .console-output { background-color: #000; color: #00ffbb; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #222; min-height: 120px; white-space: pre-wrap; }
+        .btn-blouloukh { background-color: #00ff66; color: #000; font-weight: bold; }
+        .btn-blouloukh:hover { background-color: #00cc55; color: #000; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-success">💻 Blouloukh Playground</h1>
+        <p class="text-muted">المُحاكي الرسمي السريع للغة البلولوخ v0.2 - اِكتب واِقـرص لايف!</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card p-4 shadow-lg">
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-light mb-2">اكتب كود البلولوخ هنا يا أسطى:</label>
+                    <textarea id="sourceCode" class="form-control code-input" rows="10" placeholder="ثبت حضور اسم = 'عمرو'&#10;سمعنا اسم"></textarea>
+                </div>
+                <div class="mb-4">
+                    <button onclick="runBlouloukh()" class="btn btn-blouloukh btn-lg w-100 py-3 fs-5">اِقـرص واِعـمل دَوَر العَجَلة ⚡</button>
+                </div>
+                <div>
+                    <h5 class="text-light mb-3">شاشة المخرجات (Console Output):</h5>
+                    <div id="consoleOutput" class="console-output">في انتظار دور العجلة...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function runBlouloukh() {
+    const code = document.getElementById('sourceCode').value;
+    const outputDiv = document.getElementById('consoleOutput');
+    
+    if (!code.trim()) {
+        outputDiv.innerHTML = "اكتب كود يا أسطى الأول عشان نشغله! 🛑";
+        outputDiv.style.color = "#ff3333";
+        return;
+    }
+
+    outputDiv.style.color = "#00ffbb";
+    let outputLog = "";
+    const lines = code.split('\n');
+    let variables = {};
+
+    try {
+        lines.forEach((line, index) => {
+            let trimmedLine = line.trim();
+            if (!trimmedLine) return;
+
+            if (trimmedLine.startsWith("ثبت حضور")) {
+                let definition = trimmedLine.replace("ثبت حضور", "").trim();
+                if (definition.includes("=")) {
+                    let parts = definition.split("=");
+                    let varName = parts[0].trim();
+                    let varVal = parts[1].trim().replace(/['"]/g, "");
+                    variables[varName] = varVal;
+                    outputLog += `[ذاكرة]: تم حجز المتغير (${varName}) بقيمة (${varVal})\n`;
+                } else {
+                    outputLog += `[خطأ في السطر ${index + 1}]: ثبت حضور ناقصة قيمة يا أسطى!\n`;
+                }
+            }
+            else if (trimmedLine.startsWith("سمعنا")) {
+                let varName = trimmedLine.replace("سمعنا", "").trim();
+                if (variables[varName] !== undefined) {
+                    outputLog += `> ${variables[varName]}\n`;
+                } else if (varName.startsWith("'") || varName.startsWith('"')) {
+                    outputLog += `> ${varName.replace(/['"]/g, "")}\n`;
+                } else {
+                    outputLog += `> ${varName}\n`;
+                }
+            }
+            else {
+                outputLog += `[تنبيه]: السطر (${trimmedLine}) شغال في التكييف ومفهوش مشاكل..\n`;
+            }
+        });
+
+        outputLog += "\n🚀 دور التكرار واقعد في التكييف! تم التنفيذ بنجاح.";
+        outputDiv.innerText = outputLog;
+
+    } catch (err) {
+        outputDiv.innerText = "المحرك هنج من الكود! اِتأكد من السنتكس.";
+        outputDiv.style.color = "#ff3333";
+    }
+}
+</script>
+</body>
+</html>
+index.html
+جارٍ عرض "index.html".
