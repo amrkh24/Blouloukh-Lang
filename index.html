@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي لغة البلولوخ لايف v0.3</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; text-align: right; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; padding: 30px; border-radius: 12px; }
+        .code-input { background-color: #1a1a1a; color: #00ff66; font-family: monospace; font-size: 18px; border: 1px solid #444; text-align: left; direction: ltr; }
+        .code-input:focus { background-color: #1a1a1a; color: #00ff66; border-color: #00ff66; box-shadow: none; }
+        .console-output { background-color: #000; color: #00ffbb; font-family: monospace; padding: 15px; border-radius: 5px; border: 1px solid #222; min-height: 180px; white-space: pre-wrap; text-align: right; font-size: 16px; line-height: 1.6; }
+        .btn-blouloukh { background-color: #00ff66; color: #000; font-weight: bold; font-size: 20px; transition: 0.3s; }
+        .btn-blouloukh:hover { background-color: #00cc55; color: #000; transform: scale(1.01); }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-5 fw-bold text-success">💻 Blouloukh Playground v0.3</h1>
+        <p class="text-muted">المُحاكي المطور - دعم كامل للمتغيرات، الطباعة، وكمان الدوال (Functions) لايف!</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg">
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-light mb-2 fs-5">اكتب كود البلولوخ (دوال ومتغيرات) هنا يا أسطى:</label>
+                    <textarea id="sourceCode" class="form-control code-input" rows="12" placeholder="جرّ لقمة احسب (س)&#10;    ثبت حضور ص = س&#10;    هات الباقي ص&#10;اِقفل المحبس"></textarea>
+                </div>
+                <div class="mb-4">
+                    <button onclick="runBlouloukh()" class="btn btn-blouloukh btn-lg w-100 py-3">اِقـرص واِعـمل دَوَر العَجَلة ⚡</button>
+                </div>
+                <div>
+                    <h5 class="text-light mb-3">شاشة المخرجات (Console Output):</h5>
+                    <div id="consoleOutput" class="console-output">في انتظار دور العجلة...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function runBlouloukh() {
+    const code = document.getElementById('sourceCode').value;
+    const outputDiv = document.getElementById('consoleOutput');
+    
+    if (!code.trim()) {
+        outputDiv.innerHTML = "اكتب كود يا أسطى الأول عشان نشغله! 🛑";
+        outputDiv.style.color = "#ff3333";
+        return;
+    }
+
+    outputDiv.style.color = "#00ffbb";
+    let outputLog = "";
+    const lines = code.split('\n');
+    
+    let globalVariables = {};
+    let functions = {};
+    let inFunctionMode = false;
+    let currentFuncName = "";
+    let currentFuncArgs = [];
+    let currentFuncLines = [];
+
+    try {
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (!line) continue;
+
+            // --- 1. طور بناء الدالة (Function Definition Mode) ---
+            if (inFunctionMode) {
+                if (line === "اِقفل المحبس") {
+                    functions[currentFuncName] = {
+                        args: currentFuncArgs,
+                        body: currentFuncLines
+                    };
+                    outputLog += `[محبس]: تم تسجيل الدالة (${currentFuncName}) بنجاح وقفل محبسها. ✅\n`;
+                    inFunctionMode = false;
+                    currentFuncName = "";
+                    currentFuncArgs = [];
+                    currentFuncLines = [];
+                } else {
+                    currentFuncLines.push(line);
+                }
+                continue;
+            }
+
+            // --- 2. بداية تعريف دالة جديدة ---
+            if (line.startsWith("جرّ لقمة")) {
+                let funcDef = line.replace("جرّ لقمة", "").trim();
+                let openBrace = funcDef.indexOf("(");
+                let closeBrace = funcDef.indexOf(")");
+
+                if (openBrace === -1 || closeBrace === -1) {
+                    throw new Error(`سطر ${i + 1}: القوسين بتوع الدالة طاروا منك فين يا أسطى؟`);
+                }
+
+                currentFuncName = funcDef.substring(0, openBrace).trim();
+                let argsStr = funcDef.substring(openBrace + 1, closeBrace).trim();
+                currentFuncArgs = argsStr ? argsStr.split(',').map(a => a.trim()) : [];
+                
+                inFunctionMode = true;
+                continue;
+            }
+
+            // --- 3. الأوامر العادية في الـ Global Scope ---
+            outputLog = executeLine(line, globalVariables, functions, outputLog, i + 1);
+        }
+
+        if (inFunctionMode) {
+            throw new Error(`المحرك ضرب! نسيت تقفل محبس الدالة (${currentFuncName}) بكلمة "اِقفل المحبس"`);
+        }
+
+        outputLog += "\n🚀 تم التنفيذ بنجاح وقعدنا في التكييف!";
+        outputDiv.innerText = outputLog;
+
+    } catch (err) {
+        outputDiv.innerText = `🛑 عطل فني في السنتكس:\n${err.message}`;
+        outputDiv.style.color = "#ff3333";
+    }
+}
+
+// محرك تنفيذ السطر الواحد (يتعامل مع متغيرات لوكال أو جلوبال)
+function executeLine(line, vars, funcs, log, lineNum, isInsideFunc = false) {
+    // أمر: ثبت حضور (تعريف متغير)
+    if (line.startsWith("ثبت حضور")) {
+        let definition = line.replace("ثبت حضور", "").trim();
+        if (!definition.includes("=")) {
+            throw new Error(`سطر ${lineNum}: "ثبت حضور" ناقصة علامة (=) أو القيمة يا أسطى!`);
+        }
+        let parts = definition.split("=");
+        let varName = parts[0].trim();
+        let varVal = parts[1].trim();
+
+        // لو القيمة استدعاء دالة
+        if (varVal.startsWith("اِنده على")) {
+            let res = handleFunctionCall(varVal, vars, funcs, lineNum);
+            vars[varName] = res.value;
+            log += res.log;
+            log += `[ذاكرة]: تم حجز المتغير (${varName}) من ناتج الدالة بقيمة (${res.value})\n`;
+        } else {
+            let cleanVal = varVal.replace(/['"]/g, "");
+            vars[varName] = cleanVal;
+            log += `[ذاكرة]: تم حجز المتغير (${varName}) بقيمة (${cleanVal})\n`;
+        }
+    }
+    // أمر: سمعنا (طباعة)
+    else if (line.startsWith("سمعنا")) {
+        let varName = line.replace("سمعنا", "").trim();
+        if (vars[varName] !== undefined) {
+            log += `> ${vars[varName]}\n`;
+        } else if (varName.startsWith("'") || varName.startsWith('"')) {
+            log += `> ${varName.replace(/['"]/g, "")}\n`;
+        } else {
+            log += `> ${varName}\n`; // طباعة نص مباشر لو مش متغير
+        }
+    }
+    // أمر: اِنده على (استدعاء دالة مباشر بدون تخزين)
+    else if (line.startsWith("اِنده على")) {
+        let res = handleFunctionCall(line, vars, funcs, lineNum);
+        log += res.log;
+    }
+    // سطر برة السنتكس
+    else {
+        if (!line.startsWith("هات الباقي")) {
+            throw new Error(`سطر ${lineNum}: كلمة (${line.split(' ')[0]}) مش في قاموس البلولوخ! اِتأكد من السنتكس.`);
+        }
+    }
+    return log;
+}
+
+// محرك تشغيل واستدعاء الدوال والـ Scope الداخلي
+function handleFunctionCall(callStr, currentVars, funcs, lineNum) {
+    let callClean = callStr.replace("اِنده على", "").trim();
+    let openBrace = callClean.indexOf("(");
+    let closeBrace = callClean.indexOf(")");
+
+    if (openBrace === -1 || closeBrace === -1) {
+        throw new Error(`سطر ${lineNum}: استدعاء الدالة ناقص الأقواس بتاعته!`);
+    }
+
+    let funcName = callClean.substring(0, openBrace).trim();
+    let passedArgsStr = callClean.substring(openBrace + 1, closeBrace).trim();
+    let passedArgs = passedArgsStr ? passedArgsStr.split(',').map(a => a.trim()) : [];
+
+    if (!funcs[funcName]) {
+        throw new Error(`سطر ${lineNum}: أنت بتنده على دالة اسمها (${funcName}) وهي أصلاً مسجلتش حضور في البرنامج!`);
+    }
+
+    let targetFunc = funcs[funcName];
+    if (passedArgs.length !== targetFunc.args.length) {
+        throw new Error(`سطر ${lineNum}: الدالة (${funcName}) مستنية ${targetFunc.args.length} معاملات، وأنت باعتلها ${passedArgs.length}!`);
+    }
+
+    // بناء الـ Local Scope للدالة
+    let localVars = {};
+    targetFunc.args.forEach((argName, index) => {
+        let val = passedArgs[index];
+        // لو الباراميتر المبعوث هو متغير أصلي موجود في الـ Scope الحالي
+        if (currentVars[val] !== undefined) {
+            localVars[argName] = currentVars[val];
+        } else {
+            localVars[argName] = val.replace(/['"]/g, "");
+        }
+    });
+
+    let funcLog = `[استدعاء]: جاري تشغيل الدالة (${funcName})...\n`;
+    let returnValue = "مفيش";
+
+    // تنفيذ سطور الدالة داخلياً
+    for (let j = 0; j < targetFunc.body.length; j++) {
+        let funcLine = targetFunc.body[j].trim();
+        
+        if (funcLine.startsWith("هات الباقي")) {
+            let retVar = funcLine.replace("هات الباقي", "").trim();
+            if (localVars[retVar] !== undefined) {
+                returnValue = localVars[retVar];
+            } else {
+                returnValue = retVar.replace(/['"]/g, "");
+            }
+            funcLog += `[راجع]: الدالة رجّعت قيمة الباقي (${returnValue})\n`;
+            break; 
+        }
+
+        funcLog = executeLine(funcLine, localVars, funcs, funcLog, `داخلي في ${funcName}`, true);
+    }
+
+    return { value: returnValue, log: funcLog };
+}
+</script>
+</body>
+</html>
