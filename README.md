@@ -17,3 +17,5 @@
 ### طريقة التشغيل:
 استخدم الملف الأساسي لتشغيل الأكواد:
 `python3 blouloukh_v2.py test_v2.blkh`
+
+![Blouloukh Poster](https://raw.githubusercontent.com/amrkh24/Blouloukh-Lang/main/Blouloukh_Poster.png)
