@@ -17,7 +17,8 @@
 ### 💞 Collaboration & Reach
 
 * 🌱 I’m currently looking to collaborate on .NET Core backend projects and open-source initiatives.
-* 📬 How to reach me: Connect with me right here on GitHub or via my updated [LinkedIn Profile](https://www.linkedin.com/in/amr-khalil-9234401ab?utm_source=share_via&utm_content=profile&utm_medium=member_android).
+
+* 📬 How to reach me: Connect with me right here on GitHub or via my updated [LinkedIn Profile](https://www.linkedin.com/in/amr-khalil-9234401ab?v=1)
 
 ---
 
