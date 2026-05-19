@@ -16,7 +16,16 @@
             --border-color: #30363d;
         }
 
-        body { background-color: var(--bg-color); color: var(--text-color); font-family: 'Cairo', sans-serif; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            font-family: 'Cairo', sans-serif; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
 
         .container { width: 95%; max-width: 1280px; display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
 
@@ -30,13 +39,18 @@
 
         .output-box { 
             color: var(--neon-blue); overflow-y: auto; 
-            white-space: pre-wrap; /* دي هتخلي الكلام يلف بدل ما يطول */
-            word-wrap: break-word; /* بتجبر الكلام يتقسم جوه البوكس */
+            white-space: pre-wrap;     /* تجعل النص يلف داخل الصندوق بالعرض */
+            word-wrap: break-word;     /* تمنع خروج الكلام عن الإطار */
+            direction: rtl;            /* ضبط اتجاه الكتابة العربي */
+            text-align: right;         /* محاذاة النص لليمين */
             border-left: 4px solid var(--neon-blue);
-            text-align: right;
         }
 
-        .btn-run { background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink)); color: white; border: none; padding: 14px 60px; font-size: 1.4rem; font-weight: 900; border-radius: 50px; cursor: pointer; margin-top: 20px; }
+        .btn-run { 
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink)); 
+            color: white; border: none; padding: 14px 60px; font-size: 1.4rem; 
+            font-weight: 900; border-radius: 50px; cursor: pointer; margin-top: 20px; 
+        }
     </style>
 </head>
 <body>
@@ -82,4 +96,6 @@
                 if (trimmed.startsWith('سجل عندك دالة')) {
                     logBuffer += `📌 سجل عندك دالة -> تسجيل الدالة\n`;
                 } else if (trimmed.startsWith('سمعنا')) {
-                    let msg = trimmed.
+                    let msg = trimmed.replace('سمعنا', '').replace(/"/g, '').trim();
+                    logBuffer += `📢 مخرجات: ${msg}\n`;
+                } else if (trimmed.startsWith
