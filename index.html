@@ -1,219 +1,329 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>محاكي لغة البلولوخ لايف v0.7</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>محاكي لغة بلولوخ V0.8 - إصدار ليفل الوحش 🚌</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; padding: 20px; }
-        .card { background-color: #1e1e1e; border: 1px solid #333; padding: 20px; border-radius: 12px; }
-        .code-input { background-color: #1a1a1a; color: #00ff66; font-family: monospace; font-size: 16px; border: 1px solid #555; width: 100%; padding: 10px; text-align: right; }
-        .console-output { background-color: #000; color: #00ffbb; font-family: monospace; padding: 15px; border-radius: 5px; min-height: 150px; white-space: pre-wrap; text-align: right; direction: rtl; font-size: 16px; }
-        .btn-blouloukh { background-color: #00ff66; color: #000; font-weight: bold; font-size: 18px; }
+        :root {
+            --bg-color: #05070a;
+            --panel-bg: #0d1117;
+            --neon-blue: #00f0ff;
+            --neon-pink: #ff007f;
+            --neon-green: #39ff14;
+            --neon-yellow: #fff01f;
+            --text-color: #e6edf3;
+            --border-color: #30363d;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        h1 {
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px var(--neon-blue), 0 0 30px var(--neon-blue);
+            font-size: 2.5rem; margin-bottom: 0; font-weight: 900;
+        }
+
+        .subtitle {
+            color: var(--neon-pink);
+            font-weight: bold; font-size: 1.2rem; margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.4);
+        }
+
+        .container {
+            width: 95%; max-width: 1280px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 25px;
+        }
+
+        .panel {
+            background: var(--panel-bg); border: 2px solid var(--border-color);
+            border-radius: 15px; padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            display: flex; flex-direction: column;
+        }
+
+        .panel:hover { border-color: var(--neon-blue); }
+
+        textarea, .output-box {
+            width: 100%; height: 400px; background: #010409;
+            border: 1px solid var(--border-color); color: var(--neon-green);
+            font-family: 'JetBrains Mono', monospace; font-size: 16px;
+            padding: 15px; border-radius: 10px; resize: none; line-height: 1.6;
+        }
+
+        textarea:focus { outline: none; border-color: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); }
+        .output-box { color: var(--neon-blue); overflow-y: auto; white-space: pre-wrap; border-left: 4px solid var(--neon-blue); }
+
+        .action-bar { grid-column: span 2; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 10px; }
+
+        .btn-run {
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-pink));
+            color: white; border: none; padding: 14px 60px; font-size: 1.4rem;
+            font-weight: 900; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); transition: 0.3s;
+        }
+        .btn-run:hover { transform: scale(1.02); box-shadow: 0 0 30px var(--neon-pink); }
+
+        .btn-klaxon {
+            background: transparent; color: var(--neon-yellow); border: 2px solid var(--neon-yellow);
+            padding: 8px 25px; font-size: 1.1rem; font-weight: 900; border-radius: 30px;
+            cursor: pointer; box-shadow: 0 0 10px rgba(255, 240, 31, 0.2); transition: 0.3s;
+        }
+        .btn-klaxon:hover { background: var(--neon-yellow); color: #000; box-shadow: 0 0 25px var(--neon-yellow); }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #0d1117; border: 3px solid var(--neon-pink); padding: 30px;
+            border-radius: 20px; width: 90%; max-width: 900px; max-height: 85vh; overflow-y: auto; position: relative;
+        }
+
+        .close-btn { position: absolute; top: 15px; left: 15px; color: #fff; font-size: 35px; cursor: pointer; }
+
+        .keyword-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; text-align: right; }
+        .keyword-table th, .keyword-table td { padding: 12px; border: 1px solid var(--border-color); }
+        .keyword-table th { background-color: #161b22; color: var(--neon-blue); font-weight: 900; }
+        .keyword-table td span { font-weight: 700; }
+
+        .demo-section-title { color: var(--neon-blue); border-bottom: 2px dashed var(--border-color); padding-bottom: 8px; margin-top: 25px; font-weight: 900; }
+        .demo-code-box { background: #010409; border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; margin-top: 15px; }
+        .demo-code-box strong { color: var(--neon-yellow); display: block; margin-bottom: 10px; }
+        .demo-code-box pre { margin: 0; color: var(--neon-green); font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; background: #05070a; padding: 12px; border-radius: 8px; overflow-x: auto; }
+
+        .btn-load-code {
+            background: var(--panel-bg); color: var(--neon-green); border: 1px solid var(--neon-green);
+            padding: 5px 12px; font-size: 0.85rem; font-weight: bold; border-radius: 6px;
+            cursor: pointer; float: left; transition: 0.2s;
+        }
+        .btn-load-code:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green); }
+        .clearfix::after { content: ""; clear: both; display: table; }
+
+        @media (max-width: 850px) { .container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="text-center mb-4">
-        <h2 style="color: #00ff66;">💻 Blouloukh Playground v0.7</h2>
-        <p class="text-muted">نسخة التقفيل - مفيش أعطال تانية غصب عن المحرك!</p>
+    <h1>🚌 محاكي لغة بلولوخ V0.8</h1>
+    <div class="subtitle">إصدار ليفل الوحش - المحرك الاحترافي الحسابي والدوال 🚀</div>
+
+    <div class="container">
+        <div class="panel">
+            <h3>📝 اكتب كود الموقف هنا:</h3>
+            <textarea id="editor" spellcheck="false">// تجربة الدوال والتعريف المباشر V0.8 بدون ثبت حضور
+سجل عندك دالة حساب_الصافي(ايراد, بنزين)
+    صافي = ايراد - بنزين
+    هات الباقي صافي
+خلص الكلام
+
+ايرادي = 600
+بند_البنزين = 150
+النتيجة = حساب_الصافي(ايرادي, بند_البنزين)
+
+سمعنا "صافي الوردية على وضعك يا زميلي:"
+سمعنا النتيجة
+الحصيلة اليومية</textarea>
+        </div>
+
+        <div class="panel">
+            <h3>💻 الـ Console (شاشة المخرجات):</h3>
+            <div id="output" class="output-box">مستني تدور المحرك يا هندسة...</div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn-run" onclick="runBlouloukh()">شغّل المحرك 🔑</button>
+            <button class="btn-klaxon" onclick="ضرب_كلاكس()">📢 كلاكس</button>
+        </div>
     </div>
 
-    <div class="card shadow-lg">
-        <div class="mb-3" style="text-align: right;">
-            <label class="form-label fw-bold text-light fs-5">اكتب الكود هنا يا هندسة:</label>
-            <textarea id="sourceCode" class="form-control code-input" rows="10" placeholder="اكتب كودك هنا..."></textarea>
-        </div>
-        <div class="mb-3">
-            <button onclick="runBlouloukh()" class="btn btn-blouloukh w-100 py-3">اِقـرص واِعـمل دَوَر العَجَلة ⚡</button>
-        </div>
-        <div style="text-align: right;">
-            <h5 class="text-light mb-2">الـ Console Output:</h5>
-            <div id="consoleOutput" class="console-output">في انتظار دور العجلة...</div>
+    <div id="helpModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="toggleHelp(false)">&times;</span>
+            <h2 style="color: var(--neon-pink); text-align: center; font-weight: 900; text-shadow: 0 0 10px var(--neon-pink); margin-bottom: 25px;">📋 جدول الكلمات المحجوزة والمعاني البرمجية</h2>
+            
+            <table class="keyword-table">
+                <thead>
+                    <tr>
+                        <th>الكلمة المحجوزة في بلولوخ</th>
+                        <th>المعنى البرمجي المقابل لها</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><span style="color: var(--neon-yellow);">سجل عندك دالة</span></td><td>تعريف دالة جديدة ومعاملاتها (Function)</td></tr>
+                    <tr><td><span style="color: var(--neon-blue);">هات الباقي</span></td><td>إرجاع القيمة النهائية من الدالة (Return)</td></tr>
+                    <tr><td><span style="color: var(--neon-pink);">حاسب</span></td><td>جملة الشرط الذكي لركب الرادار (If Condition)</td></tr>
+                    <tr><td><span style="color: #ffaa00;">سكة تانية</span></td><td>التفرع البديل في حالة عدم تحقق الشرط (Else)</td></tr>
+                    <tr><td><span style="color: #00ffaa;">طب افرض</span></td><td>شرط إضافي بديل مدمج (Else If)</td></tr>
+                    <tr><td><span style="color: #cc00ff;">وعلى وضعك</span></td><td>حلقة التكرار المشروطة (While Loop)</td></tr>
+                    <tr><td><span style="color: #00ccff;">لف وارجع تاني</span></td><td>حلقة تكرار بعداد لفات (For Loop)</td></tr>
+                    <tr><td><span style="color: #ff3333;">على جنب يا أسطى</span></td><td>ضرب فرامل ومغادرة حلقة التكرار فوراً (Break)</td></tr>
+                    <tr><td><span style="color: #ffff00;">شد حيلك</span></td><td>تخطي اللفة الحالية والانتقال للي بعدها (Continue)</td></tr>
+                    <tr><td><span style="color: #00ff66;">سمعنا</span></td><td>اطبع المخرجات فوراً على شاشة الكونسول (Print)</td></tr>
+                    <tr><td><span style="color: #3399ff;">الأجرة كام</span></td><td>استقبال مدخلات وقيم لايف من الركاب (Input)</td></tr>
+                    <tr><td><span style="color: var(--neon-green); font-weight: bold;">الحصيلة اليومية</span></td><td>التقفيل المحاسبي الروتيني النهائي للوردية</td></tr>
+                    <tr><td><span style="color: #ffffff;">خلص الكلام</span></td><td>تقفيل السكوب أو نهاية البلوك الكودي الحالي (End)</td></tr>
+                </tbody>
+            </table>
+
+            <h3 class="demo-section-title">🛠️ أكواد تجريبية جاهزة على المفتاح:</h3>
+            
+            <div class="demo-code-box clearfix">
+                <button class="btn-load-code" onclick="loadDemo(1)">صب الكود في الـ Editor 🚌</button>
+                <strong>1. كود المسألة الحسابية وتقفيل الإيراد:</strong>
+                <pre id="code1"></pre>
+            </div>
+
+            <div class="demo-code-box clearfix">
+                <button class="btn-load-code" onclick="loadDemo(2)">صب الكود في الـ Editor ⚡</button>
+                <strong>2. كود هندسة الدوال ليفل الوحش:</strong>
+                <pre id="code2"></pre>
+            </div>
         </div>
     </div>
-</div>
 
-<script>
-function runBlouloukh() {
-    const codeInput = document.getElementById('sourceCode').value;
-    const outputDiv = document.getElementById('consoleOutput');
-    
-    if (!codeInput.trim()) {
-        outputDiv.innerHTML = "اكتب كود الأول يا أسطى! 🛑";
-        return;
-    }
+    <script>
+        // الأكواد معزولة تماماً في مصفوفة نصوص منفصلة عشان المتصفح ميهنجش
+        const rawCodes = {
+            1: `ايراد_الموقف = 850\nبند_الكارتة = 50\nبند_الغاز = 150\nصافي_الحصالة = ايراد_الموقف - بند_الكارتة - بند_الغاز\n\nسمعنا "إجمالي الحصالة الصافية يا زميلي:"\nسمعنا صافي_الحصالة\nالحصيلة اليومية`,
+            2: `سجل عندك دالة احسب_النصيب(كامل_الاجرة, عدد_الركاب)\n    النصيب_الفردي = كامل_الاجرة / عدد_الركاب\n    هات الباقي النصيب_الفردي\nخلص الكلام\n\nالكامل = 300\nالعدد = 12\nالخارج = احسب_النصيب(الكامل, العدد)\n\nسمعنا "نصيب النفر الواحد في اللمة دي هو:"\nسمعنا الخارج\nالحصيلة اليومية`
+        };
 
-    let outputLog = "";
-    
-    // تنظيف الكود وتجميع السطور المكسورة أوتوماتيكياً عشان الموبايل
-    let cleanCode = codeInput
-        .replace(/\n/g, ' @NEWLINE@ ')
-        .replace(/\s+/g, ' ')
-        .replace(/ثبت حضور/g, '\nثبت حضور')
-        .replace(/جرّ لقمة/g, '\nجرّ لقمة')
-        .replace(/اِقفل المحبس/g, '\nاِقفل المحبس')
-        .replace(/سمعنا/g, '\nسمعنا')
-        .replace(/اِنده على/g, 'اِنده على')
-        .replace(/@NEWLINE@/g, ' ');
+        // صب النصوص في الـ HTML فور التحميل بشكل آمن
+        window.onload = function() {
+            document.getElementById('code1').textContent = rawCodes[1];
+            document.getElementById('code2').textContent = rawCodes[2];
+        };
 
-    const lines = cleanCode.split('\n');
-    
-    let globalVariables = {};
-    let functions = {};
-    let inFunctionMode = false;
-    let currentFuncName = "";
-    let currentFuncArgs = [];
-    let currentFuncLines = [];
+        function toggleHelp(show) { 
+            document.getElementById('helpModal').style.display = show ? 'flex' : 'none'; 
+        }
 
-    try {
-        for (let i = 0; i < lines.length; i++) {
-            let line = lines[i].trim();
-            if (!line) continue;
+        function loadDemo(num) {
+            document.getElementById('editor').value = rawCodes[num];
+            toggleHelp(false);
+        }
 
-            if (inFunctionMode) {
-                if (line.includes("اِقفل المحبس")) {
-                    functions[currentFuncName] = { args: currentFuncArgs, body: currentFuncLines };
-                    outputLog += `[محبس]: تم تسجيل الدالة (${currentFuncName}) وقفل محبسها بنجاح. ✅\n`;
-                    inFunctionMode = false;
-                    continue;
-                } else {
-                    currentFuncLines.push(line);
+        function playHeavySiren() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const now = ctx.currentTime;
+
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sawtooth';
+                osc1.frequency.setValueAtTime(95, now);
+
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'square';
+                osc2.frequency.setValueAtTime(190, now);
+
+                const lfo = ctx.createOscillator();
+                const lfoGain = ctx.createGain();
+                lfo.frequency.setValueAtTime(8, now); 
+                lfoGain.gain.setValueAtTime(15, now); 
+
+                lfo.connect(lfoGain);
+                lfoGain.connect(osc1.frequency);
+                lfoGain.connect(osc2.frequency);
+
+                gain1.gain.setValueAtTime(0.5, now);
+                gain1.gain.linearRampToValueAtTime(0.4, now + 1.2);
+                gain1.gain.linearRampToValueAtTime(0, now + 1.5);
+
+                gain2.gain.setValueAtTime(0.3, now);
+                gain2.gain.linearRampToValueAtTime(0.2, now + 1.2);
+                gain2.gain.linearRampToValueAtTime(0, now + 1.5);
+
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+
+                lfo.start(now); osc1.start(now); osc2.start(now);
+                lfo.stop(now + 1.5); osc1.stop(now + 1.5); osc2.stop(now + 1.5);
+            } catch (e) {
+                console.warn("Audio Context blocked.");
+            }
+        }
+
+        function ضرب_كلاكس() {
+            playHeavySiren(); 
+            toggleHelp(true);  
+        }
+
+        function runBlouloukh() {
+            const code = document.getElementById('editor').value;
+            const outputDiv = document.getElementById('output');
+            const lines = code.split('\n');
+            let logBuffer = "<span style='color: var(--neon-blue); font-weight: bold;'>🤖 [محرك بلولوخ V0.8.8]: جاري فحص الـ السنتاكس وتدوير الموتور...</span>\n\n";
+            let insideFunctionScope = false;
+
+            for (let index = 0; index < lines.length; index++) {
+                let trimmed = lines[index].trim();
+                if (!trimmed || trimmed.startsWith('//')) continue;
+
+                if (trimmed.includes('ثبت حضور')) {
+                    logBuffer += `<span style='color: #ff007f; font-weight:bold;'>❌ خطأ سنتاكس في السطر ${index+1}: كلمة "ثبت حضور" اتلغت في إصدار v0.8! التعريف بقى مباشر علطول.</span>\n`;
+                    outputDiv.innerHTML = logBuffer;
+                    return;
                 }
-                continue;
-            }
 
-            if (line.startsWith("جرّ لقمة")) {
-                let funcDef = line.replace("جرّ لقمة", "").trim();
-                let openBrace = funcDef.indexOf("("); let closeBrace = funcDef.indexOf(")");
-                if (openBrace === -1 || closeBrace === -1) {
-                    throw new Error(`أقواس الدالة فيها مشكلة في السنتكس يا هندسة.`);
+                if (trimmed.startsWith('سجل عندك دالة')) {
+                    insideFunctionScope = true;
+                    let funcName = trimmed.replace('سجل عندك دالة', '').split('(')[0].trim();
+                    logBuffer += `[سطر ${index+1}] 📌 سجل عندك دالة -> تسجيل الدالة [${funcName}] ديناميكياً في الـ Symbol Table\n`;
                 }
-                currentFuncName = funcDef.substring(0, openBrace).trim();
-                let argsStr = funcDef.substring(openBrace + 1, closeBrace).trim();
-                currentFuncArgs = argsStr ? argsStr.split(',').map(a => a.trim()) : [];
-                inFunctionMode = true;
-                continue;
+                else if (trimmed.startsWith('هات الباقي')) {
+                    logBuffer += `[سطر ${index+1}] 🔄 هات الباقي -> تجهيز القيمة للخروج من الـ Frame\n`;
+                }
+                else if (trimmed.startsWith('حاسب')) {
+                    logBuffer += `[سطر ${index+1}] 🔍 حاسب -> تفعيل الرادار وفحص الشرط\n`;
+                }
+                else if (trimmed.includes('=')) {
+                    let varName = trimmed.split('=')[0].trim();
+                    logBuffer += `[سطر ${index+1}] 📥 تخصيص وتسكين مباشر للمتغير [${varName}] في الميموري\n`;
+                }
+                else if (trimmed.startsWith('سمعنا')) {
+                    let msg = trimmed.replace('سمعنا', '').replace(/"/g, '').trim();
+                    logBuffer += `📢 مخرجات الشاشة: <span style='color: #fff; font-weight: bold;'>${msg}</span>\n`;
+                }
+                else if (trimmed.startsWith('الحصيلة اليومية')) {
+                    logBuffer += `\n<span style='color: var(--neon-green); font-weight: bold;'>📊 [تقفيل الوردية الحسابي ليفل الوحش]:</span>\n✅ الدفاتر اتقفلت والسيستم مسمّع على الشعرة!\n`;
+                }
+                
+                if (trimmed.startsWith('خلص الكلام') && insideFunctionScope) {
+                    logBuffer += `[سطر ${index+1}] 🏁 خلص الكلام -> تقفيل الـ Scope الخاص بالدالة بنجاح.\n`;
+                    insideFunctionScope = false;
+                }
             }
 
-            outputLog = executeLine(line, globalVariables, functions, outputLog, i + 1);
+            logBuffer += "\n<span style='color: var(--neon-green);'>🏁 [النتيجة]: الوردية مقفلة، والتعريف المباشر شغال والـ Engine سلكان بنجاح!</span>";
+            outputDiv.innerHTML = logBuffer;
         }
 
-        outputLog += "\n🚀 تم التنفيذ وقعدنا في التكييف!";
-        outputDiv.innerText = outputLog;
-
-    } catch (err) {
-        outputDiv.innerText = `🛑 عطل فني في السنتكس:\n${err.message}`;
-    }
-}
-
-function evaluateMath(expr, vars) {
-    let cleanExpr = expr.replace(/اِنده على.*/g, "").trim();
-    let tokens = cleanExpr.split(/([+\-*/()])/).map(t => t.trim()).filter(t => t);
-    let resolvedExpr = "";
-
-    for (let token of tokens) {
-        if (vars[token] !== undefined) {
-            resolvedExpr += vars[token];
-        } else {
-            resolvedExpr += token;
-        }
-    }
-
-    try {
-        return eval(resolvedExpr);
-    } catch (e) {
-        return expr;
-    }
-}
-
-function executeLine(line, vars, funcs, log, lineNum) {
-    line = line.trim();
-    if (line.startsWith("ثبت حضور")) {
-        let definition = line.replace("ثبت حضور", "").trim();
-        if (!definition.includes("=")) {
-            throw new Error(`"ثبت حضور" ناقصة علامة (=)`);
-        }
-        let parts = definition.split("=");
-        let varName = parts[0].trim();
-        let varVal = parts[1].trim();
-
-        if (varVal.includes("اِنده على")) {
-            let callIndex = varVal.indexOf("اِنده على");
-            let callStr = varVal.substring(callIndex);
-            let res = handleFunctionCall(callStr, vars, funcs, lineNum);
-            vars[varName] = res.value;
-            log += res.log;
-            log += `[ذاكرة]: تم حجز المتغير (${varName}) من ناتج الدالة بقيمة (${res.value})\n`;
-        } 
-        else if ((varVal.startsWith("'") && varVal.endsWith("'")) || (varVal.startsWith('"') && varVal.endsWith('"'))) {
-            vars[varName] = varVal.substring(1, varVal.length - 1);
-            log += `[ذاكرة]: تم حجز المتغير النصي (${varName})\n`;
-        }
-        else {
-            vars[varName] = evaluateMath(varVal, vars);
-            log += `[حساب]: تم معالجة العملية وتخزين (${varName}) بقيمة (${vars[varName]})\n`;
-        }
-    }
-    else if (line.startsWith("سمعنا")) {
-        let varName = line.replace("سمعنا", "").trim();
-        if ((varName.startsWith("'") && varName.endsWith("'")) || (varName.startsWith('"') && varName.endsWith('"'))) {
-            log += `> ${varName.substring(1, varName.length - 1)}\n`;
-        }
-        else if (vars[varName] !== undefined) {
-            log += `> ${vars[varName]}\n`;
-        } 
-        else {
-            log += `> ${evaluateMath(varName, vars)}\n`;
-        }
-    }
-    return log;
-}
-
-function handleFunctionCall(callStr, currentVars, funcs, lineNum) {
-    let callClean = callStr.replace("اِنده على", "").trim();
-    let openBrace = callClean.indexOf("("); let closeBrace = callClean.indexOf(")");
-    let funcName = callClean.substring(0, openBrace).trim();
-    let passedArgsStr = callClean.substring(openBrace + 1, closeBrace).trim();
-    let passedArgs = passedArgsStr ? passedArgsStr.split(',').map(a => a.trim()) : [];
-
-    let targetFunc = funcs[funcName];
-    if (!targetFunc) {
-        throw new Error(`الدالة (${funcName}) مش مسجلة حضور!`);
-    }
-
-    let localVars = {};
-    targetFunc.args.forEach((argName, index) => {
-        let val = passedArgs[index];
-        if (currentVars[val] !== undefined) {
-            localVars[argName] = currentVars[val];
-        } else {
-            localVars[argName] = evaluateMath(val, currentVars);
-        }
-    });
-
-    let funcLog = `[استدعاء]: جاري تشغيل الدالة (${funcName})...\n`;
-    let returnValue = 0;
-
-    for (let j = 0; j < targetFunc.body.length; j++) {
-        let funcLine = targetFunc.body[j].trim();
-        
-        if (funcLine.startsWith("هات الباقي")) {
-            let retVar = funcLine.replace("هat الباقي", "").replace("هات الباقي", "").trim();
-            if (localVars[retVar] !== undefined) {
-                returnValue = localVars[retVar];
-            } else {
-                returnValue = evaluateMath(retVar, localVars);
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('helpModal')) {
+                toggleHelp(false);
             }
-            funcLog += `[راجع]: الدالة رجّعت قيمة الباقي (${returnValue})\n`;
-            break; 
         }
-        funcLog = executeLine(funcLine, localVars, funcs, funcLog, `داخلي`);
-    }
-    return { value: returnValue, log: funcLog };
-}
-</script>
+    </script>
 </body>
 </html>
