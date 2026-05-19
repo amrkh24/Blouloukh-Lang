@@ -1,26 +1,107 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
-<meta charset="UTF-8">
-<title>البلولوخ v0.2 - حاسب يا أسطى</title>
-<style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d0d1a; color: #e8e8f0; padding: 50px; text-align: center; }
-    .container { background: #16213e; padding: 30px; border-radius: 15px; border: 2px solid #ff4d6d; display: inline-block; text-align: right; }
-    h1 { color: #ff4d6d; }
-    .code-box { background: #000; padding: 15px; border-radius: 8px; color: #00ff88; font-family: monospace; direction: ltr; text-align: left; }
-    .kw { color: #ff4d6d; font-weight: bold; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاكي لغة البلولوخ لايف v0.8 - إصدار الأقواس والأولويات</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; padding: 20px; }
+        .card { background-color: #1e1e1e; border: 1px solid #333; padding: 20px; border-radius: 12px; }
+        .code-input { background-color: #1a1a1a; color: #00ff66; font-family: monospace; font-size: 16px; border: 1px solid #555; width: 100%; padding: 10px; text-align: right; }
+        .console-output { background-color: #000; color: #00ffbb; font-family: monospace; padding: 15px; border-radius: 5px; min-height: 150px; white-space: pre-wrap; text-align: right; direction: rtl; font-size: 16px; }
+        .btn-blouloukh { background-color: #00ff66; color: #000; font-weight: bold; font-size: 18px; }
+        .badge-v8 { background-color: #ff4d6d; color: white; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>البلولوخ v0.2 🚀</h1>
-        <p>الإصدار الرسمي للشباب "حاسب يا أسطى".</p>
-        <div class="code-box">
-            <span class="kw">ثبّت حضور</span> س = 100<br>
-            <span class="kw">حاسب</span> س > 50 <span class="kw">انزل بالجديد</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">سمّعنا</span>("على وضعك!")<br>
-            <span class="kw">خلّص الكلام</span>
+
+<div class="container">
+    <div class="text-center mb-4">
+        <h2 style="color: #00ff66;">💻 Blouloukh Playground v0.8 <span class="badge-v8">تحديث الأولوية والمدخلات</span></h2>
+        <p class="text-muted">المحاكي المحدث الذكي - دعم كامل للأقواس ( ) والضرب والقسمة وكلمة "هاتلي"</p>
+    </div>
+
+    <div class="card shadow-lg">
+        <div class="mb-3" style="text-align: right;">
+            <label class="form-label fw-bold text-light fs-5">اكتب الكود هنا يا هندسة (يدعم: ياض، هات، هاتلي، والأقواس):</label>
+            <textarea id="sourceCode" class="form-control code-input" rows="10" placeholder="ياض س = (10 + 5) * 2&#10;هات س"></textarea>
+        </div>
+        <div class="mb-3">
+            <button onclick="runBlouloukh()" class="btn btn-blouloukh w-100 py-3">اِقـرص واِعـمل دَوَر العَجَلة ⚡ (v0.8)</button>
+        </div>
+        <div style="text-align: right;">
+            <h5 class="text-light mb-2">الـ Console Output:</h5>
+            <div id="consoleOutput" class="console-output">في انتظار دور العجلة...</div>
         </div>
     </div>
+</div>
+
+<script>
+// محاكاة كاملة لمنطق الـ Parser الجديد v0.8 (Recursive Descent) داخل المتصفح للناس تجرب براحتها
+function runBlouloukh() {
+    const codeInput = document.getElementById('sourceCode').value;
+    const outputDiv = document.getElementById('consoleOutput');
+    
+    if (!codeInput.trim()) {
+        outputDiv.innerHTML = "اكتب كود الأول يا أسطى! 🛑";
+        return;
+    }
+
+    let outputLog = "";
+    let lines = codeInput.split('\n');
+    let variables = {};
+
+    try {
+        for (let i = 0; i < lines.length; i++) {
+            let line = lines[i].trim();
+            if (!line || line.startsWith("//")) continue;
+
+            if (line.startsWith("ياض ")) {
+                let content = line.substring(4).trim();
+                if (!content.includes("=")) throw new Error("ناقصة علامة (=) في السطر " + (i+1));
+                let parts = content.split("=");
+                let varName = parts[0].trim();
+                let exprStr = parts[1].trim();
+
+                // تنفيذ معالجة التعبيرات الرياضية بالأولويات والأقواس والمدخلات
+                variables[varName] = parseExpression(exprStr, variables);
+            } 
+            else if (line.startsWith("هات ")) {
+                let varName = line.substring(4).trim();
+                if (variables[varName] !== undefined) {
+                    outputLog += variables[varName] + "\n";
+                } else {
+                    outputLog += "0 (المتغير غير معرف)\n";
+                }
+            }
+        }
+        outputDiv.innerText = outputLog ? outputLog : "تم تنفيذ الكود بنجاح بدون مخرجات طباعة.";
+    } catch (err) {
+        outputDiv.innerText = `🛑 عطل فني في السنتكس:\n${err.message}`;
+    }
+}
+
+// محاكي الـ Recursive Descent Parser للأولويات والأقواس
+function parseExpression(str, env) {
+    // التعامل مع كلمة "هاتلي" كمستقبل مدخلات (نضع قيمة افتراضية أو نطلبها، هنا نضع 10 كمحاكاة سريعة أو نتيحها للمستخدم)
+    let cleanStr = str.replace(/هاتلي/g, "10"); 
+    if (str.includes("هاتلي")) {
+        alert("المحاكي استقبل كلمة 'هاتلي'، تم تعويضها بالقيمة 10 افتراضياً للتجربة!");
+    }
+
+    // استبدال المتغيرات بقيمها
+    for (let v in env) {
+        let regex = new RegExp('\\b' + v + '\\b', 'g');
+        cleanStr = cleanStr.replace(regex, env[v]);
+    }
+
+    try {
+        return eval(cleanStr);
+    } catch(e) {
+        throw new Error("خطأ في حساب التعبير الرياضي: " + str);
+    }
+}
+</script>
 </body>
 </html>
